@@ -257,6 +257,12 @@ Response:
 }
 ```
 
+## Стек
+- DRF(Django REST Framework)
+- Django
+- Docker
+- Github Actions
+
 ## Автор проекта
 
 - Ананченко Алексей
