@@ -14,9 +14,6 @@
 4. Автоматический деплой проекта на боевой сервер
 5. Отправка уведомления в Telegram о том, что процесс деплоя успешно завершился. 
 
-### Бейдж со статусом Workflow:
-![example workflow](https://github.com/AlexeyAnanchenko/yamdb_final/actions/workflows/yamdb_workflow.yml/badge.svg)
-
 
 ## Как запустить проект
 
