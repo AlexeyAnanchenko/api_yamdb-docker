@@ -1,10 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-
-from reviews.models import (Categories, Genre,
-                            Title, ROLES, Comment,
-                            Review, User)
+from reviews.models import (ROLES, Categories, Comment, Genre, Review, Title,
+                            User)
 from reviews.validators import MinMaxYearValueValidators
+
 from .mixins import UsernameSerializer
 
 

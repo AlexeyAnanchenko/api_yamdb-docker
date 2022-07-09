@@ -1,4 +1,4 @@
-# api_yamdb
+# API_YAmdb
 
 ## Описание
 
@@ -7,33 +7,65 @@
 Благодарные или возмущённые пользователи оставляют к произведениям текстовые отзывы (Review) и ставят произведению оценку в диапазоне от одного до десяти (целое число); из пользовательских оценок формируется усреднённая оценка произведения — рейтинг (целое число). На одно произведение пользователь может оставить только один отзыв.
 
 В данном проекте были отработаны навыки командной работы в GIT, закреплены знания по созданию REST API, а так же изолированной среды в Docker.
+Кроме того в данной работе реализован метод разработки CI/CD. При внесении изменений в проект и отправки их с локального компьютера в репозиторий на GitHub, производяться следующие процессы с помощью Github Actions:
+
+1. Проводиться тестирование на соответствие кода PEP8, а так же запуск pytest из репозитория.
+3. Сборка и доставка докер-образа для контейнера web на Docker Hub
+4. Автоматический деплой проекта на боевой сервер
+5. Отправка уведомления в Telegram о том, что процесс деплоя успешно завершился. 
+
+### Бейдж со статусом Workflow:
+![example workflow](https://github.com/AlexeyAnanchenko/yamdb_final/actions/workflows/yamdb_workflow.yml/badge.svg)
+
 
 ## Как запустить проект
-Клонировать репозиторий:
+
+Для успешного использования проекта понадобится добавить Секреты (переменные среды в Github) в свой репозиторий после fork-а:
+- DOCKER_USERNAME (имя пользователя в Docker Hub)
+- DOCKER_PASSWORD (пароль от учётной записи в Docker Hub)
+- HOST (ip-дрес боевого сервера)
+- USER (имя пользоватля для подключения к серверу)
+- PASSPHRASE (фраза-пароль для использования SSH-ключа)
+- SSH-KEY (закрытый ключ компьютера с доступом к серверу)
+- TELEGRAM_TO (id Вашего аккаунта в Telegram)
+- TELEGRAM_TOKEN (токен бота для рассылки уведомления)
+- MAIL (почта с которой будет рассылаться токен для подтверждения авторизации)
+- MAIL_PASSWORD (пароль от почты выше)
+- SECRET_KEY (ключ Django-проекта)
+- DB_ENGINE (используемая база, по умолчанию django.db.backends.postgresql)
+- DB_NAME (имя базы)
+- POSTGRES_USER (пользователь базы)
+- POSTGRES_PASSWORD (пароль пользователя)
+- DB_HOST (хост)
+- DB_PORT (порт)
+
+
+После этого выполнить следующие действия:
+
+1. Клонировать репозиторий:
 
 ```sh
 git clone git@github.com:AlexeyAnanchenko/api_yamdb-docker.git
 ```
 
-Создайте файл .env в директории nginx/ и заполните перменные окружения:
-- MAIL=_почта с которой будет рассылаться токен_,
-- PASSWORD=_пароль от почты выше_,
-- SECRET_KEY=_ключ Джанго проекта_,
-- DB_ENGINE=_django.db.backends.postgresql_,
-- DB_NAME=_имя базы_,
-- POSTGRES_USER=_пользователь базы_,
-- POSTGRES_PASSWORD=_пароль пользователя_,
-- DB_HOST=_хост_,
-- DB_PORT=_порт_,
+2. Зайти на свой удаленный сервер:
 
-
-Запустить docker-compose:
+3. Остановить службу nginx (если запущена):
 
 ```sh
-sudo docker-compose up -d
+sudo systemctl stop nginx
 ```
 
-Выполните миграции и создайте суперпользователя:
+4. Установите docker и docker-compose (если не установлено), с этим вам поможет официальная документация: https://docs.docker.com/compose/install
+
+5. Скопируйте файлы docker-compose.yaml и nginx/default.conf из вашего проекта на сервер в home/<ваш_username>/docker-compose.yaml и home/<ваш_username>/nginx/default.conf соответственно.
+
+
+Далее после каждого пуша проект будет автоматически разворачиваться на боевом сервере:
+
+Для корректной работы, после первого деплоя надо сделать следующие операции в контейнере проекта на сервере:
+
+6. Выполните миграции и создайте суперпользователя:
 
 ```sh
 sudo docker-compose exec web python manage.py migrate
@@ -43,19 +75,26 @@ sudo docker-compose exec web python manage.py migrate
 sudo docker-compose exec web python manage.py createsuperuser
 ```
 
-Соберите статику:
+7. Соберите статику:
 
 ```sh
 sudo docker-compose exec web python manage.py collectstatic --no-input
 ```
 
-Загрузите тестовые данные:
+8. Загрузите тестовые данные с помощю специально подготовленной менеджмент-команды:
 
 ```sh
 sudo docker-compose exec web python manage.py import-csv
 ```
 
-Теперь проект доступен по адресу http://localhost/.
+## Основные адреса проекта:
+
+ip - это IP вашего боевого сервера, где будет деплой проекта
+
+- http://ip/api/v1/ (основная страница проекта)
+- http://ip/admin (админка)
+- http://ip/redoc (подробное описание всех адресов и доступов проекта)
+
 
 ## Как зарегистрироваться через API:
 
@@ -63,7 +102,7 @@ sudo docker-compose exec web python manage.py import-csv
 
 Request (POST-запрос):
 ```sh
-http://localhost/api/v1/auth/signup/
+http://ip/api/v1/auth/signup/
 ```
 
 ```sh
@@ -89,7 +128,7 @@ Response:
 
 Request (POST-запрос):
 ```sh
-http://localhost/api/v1/auth/token/
+http://ip/api/v1/auth/token/
 ```
 
 ```sh
@@ -116,7 +155,7 @@ Response:
 
 Request (GET-запрос):
 ```sh
-http://localhost/api/v1/titles/
+http://ip/api/v1/titles/
 ```
 
 Response:
@@ -164,7 +203,7 @@ Response:
 
 Request (POST-запрос):
 ```sh
-http://localhost/api/v1/titles/{title_id}/reviews/
+http://ip/api/v1/titles/{title_id}/reviews/
 ```
 
 ```sh
@@ -193,7 +232,7 @@ Response:
 
 Request (PATCH-запрос):
 ```sh
-http://localhost/api/v1/users/me/
+http://ip/api/v1/users/me/
 ```
 
 ```sh

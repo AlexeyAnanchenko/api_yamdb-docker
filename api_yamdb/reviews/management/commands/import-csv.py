@@ -5,10 +5,10 @@ class Command(BaseCommand):
     help = 'Команда для загрузки тестовых данных'
 
     def handle(self, *args, **options):
-        import os
-        import psycopg2
         import csv
+        import os
 
+        import psycopg2
         from dotenv import load_dotenv
 
         load_dotenv()

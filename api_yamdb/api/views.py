@@ -1,27 +1,26 @@
-from django.db.models import Avg
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMessage
+from django.db import IntegrityError
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, permissions, viewsets, filters
-from rest_framework.decorators import api_view
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import action, permission_classes
-from rest_framework.pagination import PageNumberPagination
+from reviews.models import ROLES, Categories, Genre, Review, Title, User
 
 from api_yamdb.settings import EMAIL_HOST_USER
-from reviews.models import (Categories, Genre, Review,
-                            Title, User, ROLES)
+
 from .filters import TitleFilter
 from .mixins import CreateListDestroyGenreCategoryBaseViewSet
-from .permissions import IsAdmin, IsAdminOrReadOnly
-from .permissions import IsAdmin_Moderator_AuthorOrReadOnly
-from .serializers import (CategorySerializer, GenreSerializer,
-                          TitleListSerializer, TitleCreateSerializer)
-from .serializers import ReviewSerializer, CommentSerializer, UserSerializer
-from .serializers import SignUpSerializer, ActivateAccountSerializer
+from .permissions import (IsAdmin, IsAdminModeratorAuthorOrReadOnly,
+                          IsAdminOrReadOnly)
+from .serializers import (ActivateAccountSerializer, CategorySerializer,
+                          CommentSerializer, GenreSerializer, ReviewSerializer,
+                          SignUpSerializer, TitleCreateSerializer,
+                          TitleListSerializer, UserSerializer)
 from .tokens import account_activation_token
 
 
@@ -148,7 +147,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdmin_Moderator_AuthorOrReadOnly,)
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
@@ -163,7 +162,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAdmin_Moderator_AuthorOrReadOnly,)
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
         review = get_object_or_404(
